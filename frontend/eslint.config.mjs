@@ -4,6 +4,9 @@ import withNuxt from './.nuxt/eslint.config.mjs'
 import vueI18n from '@intlify/eslint-plugin-vue-i18n'
 
 export default withNuxt(
+  {
+    ignores: ['openapi.json'],
+  },
   stylistic.configs['recommended'],
   ...vueI18n.configs.recommended,
   {
