@@ -1,9 +1,9 @@
 <template>
-  <Dialog
+  <FullScreenDialog
     v-model:visible="formVisible"
     modal
     closable
-    class="w-full  max-w-[30rem]"
+    class="w-full md:max-w-[30rem]"
     :header="props.family.entity_form.title"
   >
     <!-- Entity Form Pages -->
@@ -153,7 +153,7 @@
         </div>
       </div>
     </form>
-  </Dialog>
+  </FullScreenDialog>
 </template>
 
 <script setup lang="ts">
@@ -162,6 +162,7 @@ import type { __String } from 'typescript'
 import type { Category, EntityOrCommentData, Family, FormField, PublicNewComment, PublicNewEntity } from '~/lib'
 import state from '~/lib/viewer-state'
 import { isValidRichText, isValidText } from '~/lib/validation'
+import FullScreenDialog from '~/components/viewer/common/FullScreenDialog.vue'
 
 defineExpose({ open, close, toggle })
 

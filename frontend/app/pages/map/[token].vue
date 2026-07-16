@@ -29,8 +29,8 @@
       :dismissable="false"
       :style="fitContainer()"
       position="left"
-      class="!w-full sm:!w-[30rem]"
-      :pt="{ mask: '!w-full sm:!w-auto', pcCloseButton: 'shrink-0' }"
+      class="!w-full md:!w-[30rem]"
+      :pt="{ mask: '!w-full md:!w-auto', pcCloseButton: 'shrink-0' }"
     >
       <template #header>
         <div
