@@ -78,6 +78,7 @@
 
 <script setup lang="ts">
 import type { ViewerSearchedCachedEntity } from '~/lib'
+import { cancellable } from '~/lib/loading'
 import state from '~/lib/viewer-state'
 
 const props = defineProps<{
@@ -86,9 +87,7 @@ const props = defineProps<{
 
 const locations = computed(() => props.entity.locations.map(loc => [loc.x, loc.y]))
 
-function changeActiveEntity(entity: ViewerSearchedCachedEntity) {
-  state.selectEntity(entity.entity_id)
-}
+const changeActiveEntity = cancellable(state, state.selectedCachedEntity)
 </script>
 
 <style>

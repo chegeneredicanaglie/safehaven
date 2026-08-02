@@ -161,6 +161,11 @@
         </DataView>
       </template>
     </Card>
+    <ProgressSpinner
+      v-if="loading"
+      :aria-label="t('page.search.token.loading')"
+      class="inset-0 flex items-center justify-center"
+    />
 
     <Dialog
       v-if="state.hasActiveEntity"
@@ -181,15 +186,20 @@
       </template>
 
       <ViewerCommentAddForm
-        v-if="state.permissions?.can_add_comment"
+        v-if="state.permissions?.can_add_comment && state.activeEntity != null"
         :family="state.activeEntity!.family"
         :entity="state.activeEntity!.entity"
       />
-
       <ViewerCommonEntityDisplayer
+        v-if="state.activeEntity && state.activeEntity.type == 'full'"
         :entity="state.activeEntity!"
         :categories="state.categories"
         @entity-selected="displayEntityId"
+      />
+      <Skeleton
+        v-else
+        height="10rem"
+        class="mt-4 aspect-video w-full"
       />
     </Dialog>
 
@@ -215,6 +225,7 @@
 <script setup lang="ts">
 import type { PageState } from 'primevue/paginator'
 import type { ViewerPaginatedCachedEntities } from '~/lib'
+import { cancellable } from '~/lib/loading'
 import state from '~/lib/viewer-state'
 
 const toast = useToast()
@@ -277,7 +288,7 @@ onMounted(async () => {
 
       // Ensure the right tags are displayed
       state.filteringTags.forEach((tag) => {
-        if (entity.tags.includes(tag.id)) tag.active = null
+        if (state.activeEntity?.tags.filter(({ id }) => id == tag.id)) tag.active = null
       })
     }
   }
@@ -314,29 +325,50 @@ function onPage(event: PageState) {
   refreshResult()
 }
 
+const loading = ref(false)
+let previousController: AbortController | null = null
+
 async function refreshResult() {
+  const currentController = new AbortController()
   try {
+    loading.value = true
+    if (previousController) previousController.abort()
+    previousController = currentController
     currentEntitiesResults.value = null
     researchIncrement.value++
     currentEntitiesResults.value = await state.searchEntities(
       query.value,
       currentPage.value,
       pageSize.value,
+      false,
+      currentController.signal,
     )
   }
-  catch {
-    toast.add({
-      severity: 'error',
-      summary: t('page.search.token.error'),
-      detail: t('page.search.token.loadResultsError'),
-      life: 3000,
-    })
+  catch (error) {
+    if (error instanceof DOMException && error.name == 'AbortError') {
+      // ignore it
+    }
+    else {
+      toast.add({
+        severity: 'error',
+        summary: t('page.search.token.error'),
+        detail: t('page.search.token.loadResultsError'),
+        life: 3000,
+      })
+    }
+  }
+  finally {
+    if (!currentController.signal.aborted) {
+      loading.value = false
+    }
   }
 }
 
+const selectEntity = cancellable(state, state.selectEntity)
+
 async function displayEntityId(entityId: string) {
   try {
-    await state.selectEntity(entityId)
+    await selectEntity(entityId)
   }
   catch {
     toast.add({

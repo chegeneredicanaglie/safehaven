@@ -14,7 +14,9 @@ import type {
   EnumFilter,
   ViewerPaginatedCachedEntities,
   BootstrapPermissions,
+  ViewerCachedEntity,
 } from '~/lib'
+import type { FullEntity, PartialEntity } from './loading'
 
 type ViewData = {
   entities: DisplayableCachedEntity[]
@@ -51,7 +53,7 @@ export class AppState {
 
   private activeFamilyId: string | null = null
 
-  private _activeEntity: FetchedEntity | null = null
+  private _activeEntity: FetchedEntity & { type: 'full' } | ViewerCachedEntity & { type: 'partial' } | null = null
 
   public filteringTags: (Tag & { active: boolean | null })[] = []
   public filteringCategories: (Category & { active: boolean })[] = []
@@ -91,13 +93,24 @@ export class AppState {
     return this.filteringTags.filter(t => t.active === false).map(t => t.id)
   }
 
-  get activeEntity() {
+  get activeEntity(): PartialEntity | FullEntity | null {
     if (this._activeEntity === null) {
       return null
     }
 
+    if (this._activeEntity.type == 'partial') {
+      return {
+        type: 'partial',
+        entity: this._activeEntity,
+        family: this.familiesLookupTable[this._activeEntity.family_id]!,
+        category: this.categoriesLookupTable[this._activeEntity.category_id]!,
+        tags: [],
+      }
+    }
+
     return {
       ...this._activeEntity!,
+      type: 'full',
       family: this.familiesLookupTable[this._activeEntity!.entity.family_id]!,
       category: this.categoriesLookupTable[this._activeEntity!.entity.category_id]!,
       tags: this._activeEntity!.entity.tags.map(tagId => this.tagsLookupTable[tagId]!),
@@ -332,25 +345,32 @@ export class AppState {
     return state.initConfig!.cartography_init.zoom
   }
 
-  async selectedCachedEntity(cacheEntity: DisplayableCachedEntity) {
-    this._activeEntity = await this.client.fetchEntity(
+  async selectedCachedEntity(cacheEntity: ViewerCachedEntity, signal?: AbortSignal) {
+    this._activeEntity = { type: 'partial', ...cacheEntity }
+    const result = await this.client.fetchEntity(
       cacheEntity.entity_id,
       this.activeFilteringCategories,
       this.activeRequiredTags,
       this.activeHiddenTags,
+      signal,
     )
+    if (signal?.aborted) return
+    this._activeEntity = { type: 'full', ...result }
   }
 
-  async selectEntity(id: string) {
-    this._activeEntity = await this.client.fetchEntity(
+  async selectEntity(id: string, signal?: AbortSignal) {
+    const result = await this.client.fetchEntity(
       id,
       this.activeFilteringCategories,
       this.activeRequiredTags,
       this.activeHiddenTags,
+      signal,
     )
+    if (signal?.aborted) return
+    this._activeEntity = { type: 'full', ...result }
   }
 
-  async searchEntities(query: string, page: number, pageSize: number, require_locations?: boolean): Promise<ViewerPaginatedCachedEntities> {
+  async searchEntities(query: string, page: number, pageSize: number, require_locations?: boolean, signal?: AbortSignal): Promise<ViewerPaginatedCachedEntities> {
     if (this.permissions?.can_list_without_query || query.length >= 4)
       return await this.client.searchEntities(
         query,
@@ -362,6 +382,7 @@ export class AppState {
         pageSize,
         this.activeFilteringEnums,
         require_locations ?? false,
+        signal,
       )
     else
       return { entities: [], response_current_page: 0, total_pages: 0, total_results: 0 }
@@ -371,7 +392,7 @@ export class AppState {
     return this.categories.find(c => c.id === category_id)!
   }
 
-  async refreshView(extent: Extent, zoomLevel: number) {
+  async refreshView(extent: Extent, zoomLevel: number, signal?: AbortSignal) {
     const zoom = Math.round(zoomLevel)
     const newViewData = await this.client.getEntitiesWithinBounds(
       {
@@ -386,7 +407,10 @@ export class AppState {
       this.activeRequiredTags,
       this.activeHiddenTags,
       this.activeFilteringEnums,
+      signal,
     )
+
+    if (signal?.aborted) return
 
     // Step 1: Identify and filter out entities that are no longer present
     const existingEntityIds = new Set(newViewData.entities.map(ne => ne.id))

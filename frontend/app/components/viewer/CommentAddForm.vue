@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import type { EntityOrCommentData, Family, FormField, PublicEntity, PublicNewComment, ViewerSearchedCachedEntity } from '~/lib'
+import type { EntityOrCommentData, Family, FormField, PublicEntity, PublicNewComment, ViewerCachedEntity } from '~/lib'
 import { isValidRichText, isValidText } from '~/lib/validation'
 import state from '~/lib/viewer-state'
 
@@ -122,7 +122,7 @@ const formVisible = ref(false)
 
 const props = defineProps<{
   family: Family
-  entity: PublicEntity | ViewerSearchedCachedEntity
+  entity: ViewerCachedEntity | PublicEntity
 }>()
 
 const processingRequest = ref(false)

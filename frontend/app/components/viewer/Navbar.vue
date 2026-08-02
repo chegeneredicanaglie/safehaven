@@ -402,6 +402,7 @@ import type { Result as NominatimResult } from '~/lib/nominatim'
 import { freeFormSearch } from '~/lib/nominatim'
 import type { ViewerPaginatedCachedEntities, ViewerSearchedCachedEntity } from '~/lib'
 import type { ViewerEntityAddForm } from '#build/components'
+import { cancellable } from '~/lib/loading'
 
 const toast = useToast()
 const darkMode = useDarkMode()
@@ -491,9 +492,11 @@ function onPage(event: PageState) {
   refreshResult()
 }
 
+const searchEntities = cancellable(state, state.searchEntities)
+
 async function refreshResult() {
   try {
-    currentEntitiesResults.value = await state.searchEntities(entitySearch.value, currentPage.value, pageSize.value)
+    currentEntitiesResults.value = await searchEntities(entitySearch.value, currentPage.value, pageSize.value, false)
   }
   catch {
     toast.add({

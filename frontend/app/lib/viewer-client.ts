@@ -57,6 +57,7 @@ export default function useClient() {
       activeRequiredTags: string[],
       activeHiddenTags: string[],
       enumsConstraints: Record<string, Array<unknown>>,
+      signal?: AbortSignal,
     ) {
       const { data, error } = await rawClient.POST('/api/map/view', {
         body: {
@@ -71,6 +72,7 @@ export default function useClient() {
           active_hidden_tags: activeHiddenTags,
           enums_constraints: enumsConstraints,
         },
+        signal,
       })
       if (error) throw error
 
@@ -82,6 +84,7 @@ export default function useClient() {
       activeCategories: string[],
       activeRequiredTags: string[],
       activeHiddenTags: string[],
+      signal?: AbortSignal,
     ): Promise<FetchedEntity> {
       const { data, error } = await rawClient.POST('/api/map/entities/{id}', {
         params: { path: { id } },
@@ -90,6 +93,7 @@ export default function useClient() {
           active_required_tags: activeRequiredTags,
           active_hidden_tags: activeHiddenTags,
         },
+        signal,
       })
       if (error) throw error
 
@@ -109,6 +113,7 @@ export default function useClient() {
       pageSize: number,
       enumsConstraints: Record<string, Array<unknown>>,
       require_locations?: boolean,
+      signal?: AbortSignal,
     ): Promise<ViewerPaginatedCachedEntities> {
       const { data, error } = await rawClient.POST('/api/map/search', {
         body: {
@@ -122,14 +127,15 @@ export default function useClient() {
           require_locations: require_locations ?? false,
           enums_constraints: enumsConstraints,
         },
+        signal,
       })
       if (error) throw error
 
       return data
     },
 
-    async createComment(comment: PublicNewCommentRequest, commentFields?: FormField[]): Promise<PublicComment> {
-      const { data, error } = await this.rawClient.POST('/api/map/comments', { body: comment })
+    async createComment(comment: PublicNewCommentRequest, commentFields?: FormField[], signal?: AbortSignal): Promise<PublicComment> {
+      const { data, error } = await this.rawClient.POST('/api/map/comments', { body: comment, signal })
       if (error) throw error
 
       if (commentFields) formatCommentFieldsData(data, commentFields)
@@ -137,8 +143,8 @@ export default function useClient() {
       return data
     },
 
-    async createEntity(entity: PublicNewEntityRequest): Promise<PublicNewEntityResponse> {
-      const { data, error } = await this.rawClient.POST('/api/map/entities', { body: entity })
+    async createEntity(entity: PublicNewEntityRequest, signal?: AbortSignal): Promise<PublicNewEntityResponse> {
+      const { data, error } = await this.rawClient.POST('/api/map/entities', { body: entity, signal })
       if (error) throw error
 
       formatEntityFieldsData(data.entity, data.entity.entity_form.fields)
