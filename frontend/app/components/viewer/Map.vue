@@ -36,7 +36,7 @@
           :border-color="entity.category.border_color"
           :icon-hash="entity.category.icon_hash"
           :highlighted="isEntityHighlighted(entity)"
-          @click="handleEntityClick"
+          @click="e => $emit('entity-click', e)"
         />
       </ol-overlay>
 
@@ -70,7 +70,6 @@ import { transform } from 'ol/proj.js'
 import { getCenter as getExtentCenter } from 'ol/extent'
 import type { AppError, DisplayableCachedEntity, DisplayableCluster } from '~/lib'
 import state from '~/lib/viewer-state'
-import { cancellable } from '~/lib/loading'
 
 const toast = useToast()
 const darkMode = useDarkMode()
@@ -115,6 +114,8 @@ defineExpose({
   goToGpsExtent,
   goToWebMercatorExtent,
 })
+
+defineEmits(['entity-click'])
 
 const zoom = props.zoom
 const center = props.center
@@ -241,22 +242,6 @@ async function handleClusterClick(cluster: DisplayableCluster) {
     zoom: Math.min(map!.getView().getZoom()! + 2, map!.getView().getMaxZoom()!),
     duration: 500,
   })
-}
-
-const selectedCachedEntity = cancellable(state, state.selectedCachedEntity)
-
-async function handleEntityClick(entity: DisplayableCachedEntity) {
-  try {
-    await selectedCachedEntity(entity)
-  }
-  catch {
-    toast.add({
-      severity: 'error',
-      summary: t('cmp.viewer.map.error'),
-      detail: t('cmp.viewer.map.entityLoadError'),
-      life: 3000,
-    })
-  }
 }
 </script>
 

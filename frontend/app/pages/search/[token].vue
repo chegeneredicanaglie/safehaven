@@ -156,6 +156,7 @@
               :key="`${entity.id}-${researchIncrement}`"
               :entity="entity"
               class="p-col-12"
+              @entity-click="selectedCachedEntity"
             />
           </template>
         </DataView>
@@ -168,13 +169,13 @@
     />
 
     <Dialog
-      v-if="state.hasActiveEntity"
       v-model:visible="state.hasActiveEntity"
       maximizable
       :style="{ width: '50rem' }"
       :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
       modal
       dismissable-mask
+      @hide="stopEntityLoad"
     >
       <template #header>
         <div class="flex items-center gap-2">
@@ -224,7 +225,7 @@
 
 <script setup lang="ts">
 import type { PageState } from 'primevue/paginator'
-import type { ViewerPaginatedCachedEntities } from '~/lib'
+import type { ViewerCachedEntity, ViewerPaginatedCachedEntities } from '~/lib'
 import { cancellable } from '~/lib/loading'
 import state from '~/lib/viewer-state'
 
@@ -360,6 +361,35 @@ async function refreshResult() {
   finally {
     if (!currentController.signal.aborted) {
       loading.value = false
+    }
+  }
+}
+
+const controller = shallowRef<AbortController | null>(null)
+
+function stopEntityLoad() {
+  if (controller.value) {
+    controller.value.abort()
+  }
+}
+
+async function selectedCachedEntity(cacheEntity: ViewerCachedEntity) {
+  if (controller.value) controller.value.abort()
+  controller.value = new AbortController()
+  try {
+    await state.selectedCachedEntity(cacheEntity, controller.value.signal)
+  }
+  catch (e) {
+    if (e instanceof DOMException && e.name == 'AbortError') {
+      // do nothing
+    }
+    else {
+      toast.add({
+        severity: 'error',
+        summary: t('page.map.token.error'),
+        detail: t('page.map.token.entityLoadError'),
+        life: 3000,
+      })
     }
   }
 }

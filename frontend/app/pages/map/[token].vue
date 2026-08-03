@@ -31,6 +31,7 @@
       position="left"
       class="!w-full sm:!w-[30rem]"
       :pt="{ mask: '!w-full sm:!w-auto', pcCloseButton: 'shrink-0' }"
+      @hide="stopEntityLoad"
     >
       <template #header>
         <div
@@ -72,13 +73,33 @@
 
 <script setup lang="ts">
 import type { Coordinate } from 'ol/coordinate'
-import type { ViewerSearchedCachedEntity } from '~/lib'
+import type { ViewerCachedEntity, ViewerSearchedCachedEntity } from '~/lib'
 import state from '~/lib/viewer-state'
 import ViewerMap from '~/components/viewer/Map.vue'
 import type { Extent } from 'ol/extent'
 import { cancellable } from '~/lib/loading'
 
-const selectedCachedEntity = cancellable(state, state.selectedCachedEntity)
+const controller = shallowRef<AbortController | null>(null)
+
+function stopEntityLoad() {
+  if (controller.value) {
+    controller.value.abort()
+  }
+}
+
+async function selectedCachedEntity(cacheEntity: ViewerCachedEntity) {
+  if (controller.value) controller.value.abort()
+  controller.value = new AbortController()
+  try {
+    await state.selectedCachedEntity(cacheEntity, controller.value.signal)
+  }
+  catch (e) {
+    if (e instanceof DOMException && e.name == 'AbortError') {
+      // do nothing
+    }
+  }
+}
+
 const selectEntity = cancellable(state, state.selectEntity)
 
 const toast = useToast()

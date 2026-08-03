@@ -91,7 +91,6 @@
       "map": {
         "error": "Errore",
         "refreshError": "Impossibile aggiornare la mappa",
-        "entityLoadError": "Impossibile caricare l'entità selezionata",
         "loading": "Caricamento"
       },
       "navbar": {
@@ -381,7 +380,8 @@
       "token": {
         "error": "Errore",
         "couldNotLoadEntity": "Impossibile caricare l'entità selezionata",
-        "couldNotLoadMap": "Impossibile caricare la mappa"
+        "couldNotLoadMap": "Impossibile caricare la mappa",
+        "entityLoadError": "Impossibile caricare l'entità selezionata"
       }
     },
     "add": {
