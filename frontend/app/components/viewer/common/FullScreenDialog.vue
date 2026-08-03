@@ -7,6 +7,7 @@
     :dismissable="dismissable ?? dismissableMask"
     :show-close-icon="closable"
     block-scroll
+    @hide="() => $emit('hide')"
   >
     <template
       v-if="$slots.header"
@@ -40,6 +41,7 @@
     :closable="closable"
     :dismissable="dismissable"
     :dismissable-mask="dismissableMask"
+    @hide="() => $emit('hide')"
   >
     <template
       v-if="$slots.header"
@@ -74,6 +76,8 @@ withDefaults(
   }>(),
   { closable: true },
 )
+
+defineEmits(['hide'])
 
 const isMobile = useMediaQuery('(max-width: 768px)')
 </script>
