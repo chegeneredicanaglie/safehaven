@@ -1,7 +1,7 @@
 on:
   push:
-    tags:
-      - '**'
+    branches:
+      - 'integration'
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -45,7 +45,9 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: type=ref,event=tag
+          tags: |
+            type=sha
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'integration') }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
