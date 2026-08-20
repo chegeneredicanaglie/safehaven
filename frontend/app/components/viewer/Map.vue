@@ -36,7 +36,7 @@
           :border-color="entity.category.border_color"
           :icon-hash="entity.category.icon_hash"
           :highlighted="isEntityHighlighted(entity)"
-          @click="handleEntityClick"
+          @click="e => $emit('entity-click', e)"
         />
       </ol-overlay>
 
@@ -54,6 +54,11 @@
         />
       </ol-overlay>
     </ol-map>
+    <ProgressSpinner
+      v-if="loading"
+      :aria-label="t('cmp.viewer.map.loading')"
+      class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+    />
   </div>
 </template>
 
@@ -110,6 +115,8 @@ defineExpose({
   goToWebMercatorExtent,
 })
 
+defineEmits(['entity-click'])
+
 const zoom = props.zoom
 const center = props.center
 
@@ -133,19 +140,34 @@ async function forceRefresh() {
   delayingTimeout = setTimeout(internalRefresh, 100)
 }
 
+const loading = ref(false)
+let previousController: AbortController | null = null
+
 async function internalRefresh() {
   const { extent, currentZoom } = getExtentAndZoom()
+  const currentController = new AbortController()
   try {
-    await state.refreshView(extent, currentZoom)
+    loading.value = true
+    if (previousController) previousController.abort()
+    previousController = currentController
+    await state.refreshView(extent, currentZoom, currentController.signal)
   }
   catch (error) {
-    if ((error as AppError).error_code !== 'token_validation_error')
+    if (error instanceof DOMException && error.name == 'AbortError') {
+      // do nothing
+    }
+    else if ((error as AppError).error_code !== 'token_validation_error')
       toast.add({
         severity: 'error',
         summary: t('cmp.viewer.map.error'),
         detail: t('cmp.viewer.map.refreshError'),
         life: 3000,
       })
+  }
+  finally {
+    if (!currentController?.signal.aborted) {
+      loading.value = false
+    }
   }
 }
 
@@ -220,20 +242,6 @@ async function handleClusterClick(cluster: DisplayableCluster) {
     zoom: Math.min(map!.getView().getZoom()! + 2, map!.getView().getMaxZoom()!),
     duration: 500,
   })
-}
-
-async function handleEntityClick(entity: DisplayableCachedEntity) {
-  try {
-    await state.selectedCachedEntity(entity)
-  }
-  catch {
-    toast.add({
-      severity: 'error',
-      summary: t('cmp.viewer.map.error'),
-      detail: t('cmp.viewer.map.entityLoadError'),
-      life: 3000,
-    })
-  }
 }
 </script>
 

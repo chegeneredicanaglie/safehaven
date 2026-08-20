@@ -57,7 +57,7 @@
                 v-if="state.permissions?.can_access_entity"
                 :label="$t('cmp.viewer.fullResult.viewDetails')"
                 class="flex-auto md:flex-initial whitespace-nowrap"
-                @click="changeActiveEntity(props.entity)"
+                @click="() => $emit('entity-click', props.entity)"
               >
                 <template #icon>
                   <AppIcon icon-name="eye" />
@@ -84,11 +84,9 @@ const props = defineProps<{
   entity: ViewerSearchedCachedEntity
 }>()
 
-const locations = computed(() => props.entity.locations.map(loc => [loc.x, loc.y]))
+defineEmits(['entity-click'])
 
-function changeActiveEntity(entity: ViewerSearchedCachedEntity) {
-  state.selectEntity(entity.entity_id)
-}
+const locations = computed(() => props.entity.locations.map(loc => [loc.x, loc.y]))
 </script>
 
 <style>

@@ -19,7 +19,7 @@
         :zoom="state.startZoom()!"
         :entities="state.entities"
         :clusters="state.clusters"
-        @entity-click="(e: DisplayableCachedEntity) => state.selectedCachedEntity(e)"
+        @entity-click="selectedCachedEntity"
       />
     </div>
 
@@ -31,6 +31,7 @@
       position="left"
       class="!w-full md:!w-[30rem]"
       :pt="{ mask: '!w-full md:!w-auto', pcCloseButton: 'shrink-0' }"
+      @hide="stopEntityLoad"
     >
       <template #header>
         <div
@@ -52,10 +53,15 @@
         :entity="state.activeEntity!.entity"
       />
       <ViewerCommonEntityDisplayer
-        v-if="state.activeEntity"
+        v-if="state.activeEntity && state.activeEntity.type == 'full'"
         :entity="state.activeEntity!"
         :categories="state.categories"
         @entity-selected="displayEntityId"
+      />
+      <Skeleton
+        v-else
+        height="10rem"
+        class="mt-4 aspect-video w-full"
       />
     </Drawer>
 
@@ -67,10 +73,34 @@
 
 <script setup lang="ts">
 import type { Coordinate } from 'ol/coordinate'
-import type { DisplayableCachedEntity, ViewerSearchedCachedEntity } from '~/lib'
+import type { ViewerCachedEntity, ViewerSearchedCachedEntity } from '~/lib'
 import state from '~/lib/viewer-state'
 import ViewerMap from '~/components/viewer/Map.vue'
 import type { Extent } from 'ol/extent'
+import { cancellable } from '~/lib/loading'
+
+const controller = shallowRef<AbortController | null>(null)
+
+function stopEntityLoad() {
+  if (controller.value) {
+    controller.value.abort()
+  }
+}
+
+async function selectedCachedEntity(cacheEntity: ViewerCachedEntity) {
+  if (controller.value) controller.value.abort()
+  controller.value = new AbortController()
+  try {
+    await state.selectedCachedEntity(cacheEntity, controller.value.signal)
+  }
+  catch (e) {
+    if (e instanceof DOMException && e.name == 'AbortError') {
+      // do nothing
+    }
+  }
+}
+
+const selectEntity = cancellable(state, state.selectEntity)
 
 const toast = useToast()
 const { t } = useI18n()
@@ -133,7 +163,7 @@ onMounted(async () => {
   if (customStartEntityId) {
     // Custom entity provided, try to display it
     await displayEntityId(customStartEntityId)
-    const entity = state.activeEntity?.entity
+    const entity = state.activeEntity?.type == 'full' ? state.activeEntity!.entity : null
     const hasEntity = entity?.id == customStartEntityId
 
     if (hasEntity) {
@@ -202,7 +232,7 @@ async function refreshMap() {
 
 async function displayEntityId(entityId: string) {
   try {
-    await state.selectEntity(entityId)
+    await selectEntity(entityId)
   }
   catch {
     toast.add({
@@ -216,7 +246,7 @@ async function displayEntityId(entityId: string) {
 
 async function goToEntity(entity: ViewerSearchedCachedEntity, zoom = 14) {
   try {
-    await state.selectEntity(entity.entity_id)
+    await selectedCachedEntity(entity)
   }
   catch {
     toast.add({

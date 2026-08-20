@@ -91,7 +91,7 @@
       "map": {
         "error": "Erreur",
         "refreshError": "Impossible de rafraîchir la carte",
-        "entityLoadError": "Impossible de charger l'entité sélectionnée"
+        "loading": "Chargement"
       },
       "navbar": {
         "add": "Ajouter",
@@ -372,14 +372,16 @@
         "filters": "Filtres",
         "error": "Erreur",
         "loadDataError": "Impossible de charger les données",
-        "loadResultsError": "Impossible de charger les résultats"
+        "loadResultsError": "Impossible de charger les résultats",
+        "loading": "Chargement"
       }
     },
     "map": {
       "token": {
         "error": "Erreur",
         "couldNotLoadEntity": "Impossible de charger l'entité sélectionnée",
-        "couldNotLoadMap": "Impossible de charger la carte"
+        "couldNotLoadMap": "Impossible de charger la carte",
+        "entityLoadError": "Impossible de charger l'entité sélectionnée"
       }
     },
     "add": {

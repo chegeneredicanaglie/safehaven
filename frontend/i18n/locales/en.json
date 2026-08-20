@@ -91,7 +91,7 @@
       "map": {
         "error": "Error",
         "refreshError": "Unable to refresh the map",
-        "entityLoadError": "Unable to load the selected entity"
+        "loading": "Loading"
       },
       "navbar": {
         "add": "Add",
@@ -372,14 +372,16 @@
         "filters": "Filters",
         "error": "Error",
         "loadDataError": "Unable to load data",
-        "loadResultsError": "Unable to load results"
+        "loadResultsError": "Unable to load results",
+        "loading": "Loading"
       }
     },
     "map": {
       "token": {
         "error": "Error",
         "couldNotLoadEntity": "Unable to load the selected entity",
-        "couldNotLoadMap": "Unable to load the map"
+        "couldNotLoadMap": "Unable to load the map",
+        "entityLoadError": "Unable to load the selected entity"
       }
     },
     "add": {
