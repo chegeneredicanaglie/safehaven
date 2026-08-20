@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <Dialog
+  <FullScreenDialog
     v-if="popupData?.sanitizedContent"
     v-model:visible="visible"
     modal
@@ -41,11 +41,12 @@
         @click="validatePopup"
       />
     </template>
-  </Dialog>
+  </FullScreenDialog>
 </template>
 
 <script setup lang="ts">
 import state from '~/lib/viewer-state'
+import FullScreenDialog from '~/components/viewer/common/FullScreenDialog.vue'
 
 const popupData = state.getSanitizedPopup!
 const visible = ref(false)

@@ -227,7 +227,7 @@
     />
   </Popover>
 
-  <Dialog
+  <FullScreenDialog
     v-model:visible="filterPopupVisible"
     :header="$t('cmp.viewer.navbar.filters')"
     modal
@@ -238,7 +238,7 @@
       v-model:filtering-enums="state.filteringEnums"
       @filters-changed="filtersChanged"
     />
-  </Dialog>
+  </FullScreenDialog>
   <Popover ref="searchOp">
     <div class="flex flex-col gap-4 w-[25rem] md:w-[30rem]">
       <Tabs value="0">
@@ -370,7 +370,7 @@
     </div>
   </Popover>
 
-  <Dialog
+  <FullScreenDialog
     v-model:visible="showInformation"
     maximizable
     :style="{ width: '50rem' }"
@@ -379,7 +379,7 @@
     modal
   >
     <ViewerInformation />
-  </Dialog>
+  </FullScreenDialog>
 
   <ViewerEntityAddForm
     v-if="state.permissions?.can_add_entity"
@@ -402,6 +402,7 @@ import type { Result as NominatimResult } from '~/lib/nominatim'
 import { freeFormSearch } from '~/lib/nominatim'
 import type { ViewerPaginatedCachedEntities, ViewerSearchedCachedEntity } from '~/lib'
 import type { ViewerEntityAddForm } from '#build/components'
+import FullScreenDialog from '~/components/viewer/common/FullScreenDialog.vue'
 
 const toast = useToast()
 const darkMode = useDarkMode()
