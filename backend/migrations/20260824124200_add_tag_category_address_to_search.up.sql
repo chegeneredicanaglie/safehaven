@@ -47,12 +47,24 @@ transitive_locations AS (
 direct_locations AS (
     SELECT
         e.id AS entity_id,
+        location.value,
+        location.ordinality AS location_index
+    FROM entities e 
+    -- Join the locations from the array of locations
+    LEFT JOIN LATERAL (
+        SELECT value, ordinality
+        FROM jsonb_array_elements(e.locations) WITH ORDINALITY AS location(value, ordinality)
+    ) AS location ON true
+    WHERE e.moderated
+),
+-- For entity, get a row with the entity information
+entities_information AS (
+    SELECT
+        e.id AS entity_id,
         e.category_id,
         e.display_name,
         c.family_id,
         e.hidden,
-        location.value as location,
-        location.ordinality AS location_index,
         array_remove(array_agg(DISTINCT et.tag_id), NULL) AS tags_ids,
         COALESCE(
             jsonb_object_agg(
@@ -79,8 +91,7 @@ direct_locations AS (
         ), '') || ' ' ||
         coalesce(string_agg(c.title::text, ' '), '') || ' ' ||
         coalesce(string_agg(ett.title::text, ' '), '') || ' ' ||
-        coalesce(string_agg(cett.title::text, ' '), '') || ' '  ||
-        coalesce(location.value ->> 'plain_text', '')
+        coalesce(string_agg(cett.title::text, ' '), '')
         AS indexed_string_values
     FROM entities e
     JOIN categories c ON e.category_id = c.id
@@ -90,10 +101,6 @@ direct_locations AS (
     LEFT JOIN entity_tags cet ON ee.child_id = cet.entity_id
     LEFT JOIN tags ett ON et.tag_id = ett.id
     LEFT JOIN tags cett ON cet.tag_id = cett.id
-    LEFT JOIN LATERAL (
-        SELECT value, ordinality
-        FROM jsonb_array_elements(e.locations) WITH ORDINALITY AS location(value, ordinality)
-    ) AS location ON true
     LEFT JOIN LATERAL (
         SELECT
             key,
@@ -106,27 +113,28 @@ direct_locations AS (
         )
     ) AS transformed_fields ON true
     WHERE e.moderated
-    GROUP BY e.id, c.family_id, e.display_name, e.category_id, location.value, location.ordinality
+    GROUP BY e.id, c.family_id, e.display_name, e.category_id
 )
 -- Add the entities with their locations to the materialized view
 SELECT
     md5(dl.entity_id::text || COALESCE(dl.location_index, -1)::text || 'alone_loc')::uuid AS id,
-    dl.entity_id,
-    dl.category_id,
-    dl.display_name,
-    dl.family_id,
+    ei.entity_id,
+    ei.category_id,
+    ei.display_name,
+    ei.family_id,
     dl.location_index,
-    (dl.location ->> 'long')::double precision AS longitude,
-    (dl.location ->> 'lat')::double precision AS latitude,
-    ST_Transform(ST_SetSRID(ST_MakePoint((dl.location ->> 'long')::double precision, (dl.location ->> 'lat')::double precision), 4326), 3857) AS web_mercator_location,
-    dl.location ->> 'plain_text' AS plain_text_location,
-    dl.tags_ids,
+    (dl.value ->> 'long')::double precision AS longitude,
+    (dl.value ->> 'lat')::double precision AS latitude,
+    ST_Transform(ST_SetSRID(ST_MakePoint((dl.value ->> 'long')::double precision, (dl.value ->> 'lat')::double precision), 4326), 3857) AS web_mercator_location,
+    dl.value ->> 'plain_text' AS plain_text_location,
+    ei.tags_ids,
     NULL AS parent_id,
     NULL AS parent_display_name,
-    dl.hidden,
-    to_tsvector(dl.display_name || ' ' || COALESCE(dl.indexed_string_values, '')) AS full_text_search_ts,
-    dl.enums
+    ei.hidden,
+    to_tsvector(ei.display_name || ' ' || COALESCE(ei.indexed_string_values, '') || ' ' || COALESCE((dl.value ->> 'plain_text'), '')) AS full_text_search_ts,
+    ei.enums
 FROM direct_locations dl
+JOIN entities_information ei ON dl.entity_id = ei.entity_id
 
 UNION
 
@@ -134,22 +142,22 @@ UNION
 SELECT
     md5(tl.child_id::text || tl.parent_id::text || COALESCE(tl.location_index, -1)::text || 'with_parent')::uuid AS id,
     tl.child_id AS entity_id,
-    dl.category_id,
-    dl.display_name,
-    dl.family_id,
+    ei.category_id,
+    ei.display_name,
+    ei.family_id,
     tl.location_index,
     (tl.value ->> 'long')::double precision AS longitude,
     (tl.value ->> 'lat')::double precision AS latitude,
     ST_Transform(ST_SetSRID(ST_MakePoint((tl.value ->> 'long')::double precision, (tl.value ->> 'lat')::double precision), 4326), 3857) AS web_mercator_location,
     tl.value ->> 'plain_text' AS plain_text_location,
-    dl.tags_ids,
+    ei.tags_ids,
     tl.parent_id,
     tl.parent_display_name,
-    dl.hidden,
-    to_tsvector(dl.display_name || ' ' || COALESCE(dl.indexed_string_values, '')) AS full_text_search_ts,
-    dl.enums
+    ei.hidden,
+    to_tsvector(ei.display_name || ' ' || COALESCE(ei.indexed_string_values, '') || ' ' || COALESCE((tl.value ->> 'plain_text'), '')) AS full_text_search_ts,
+    ei.enums
 FROM transitive_locations tl
-JOIN direct_locations dl ON tl.child_id = dl.entity_id;
+JOIN entities_information ei ON tl.child_id = ei.entity_id;
 
 -- Recreate unique index on ID for concurrency refresh
 -- Copied as is from 20251119191120_fix_null_ids_in_entities_cache.sql
