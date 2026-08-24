@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT \n                id AS \"id!\",\n                entity_id AS \"entity_id!\",\n                category_id AS \"category_id!\",\n                family_id AS \"family_id!\",\n                display_name AS \"display_name!\",\n                parents AS \"parents!: Json<Vec<ParentRepresentation>>\",\n                locations AS \"locations!: Json<Vec<LocationRepresentation>>\",\n                total_results AS \"total_results!\",\n                total_pages AS \"total_pages!\",\n                response_current_page AS \"response_current_page!\"\n            FROM search_entities(\n                $1,\n                $2,\n                $3,\n                $4,\n                $5,\n                $6,\n                $7,\n                $8,\n                $9,\n                $10,\n                $11,\n                $12,\n                $13,\n                $14,\n                $15,\n                $16\n            )\n            ",
+  "query": "\n            SELECT \n                id AS \"id!\",\n                entity_id AS \"entity_id!\",\n                category_id AS \"category_id!\",\n                tags_ids AS \"tags_ids!\",\n                family_id AS \"family_id!\",\n                display_name AS \"display_name!\",\n                parents AS \"parents!: Json<Vec<ParentRepresentation>>\",\n                locations AS \"locations!: Json<Vec<LocationRepresentation>>\",\n                total_results AS \"total_results!\",\n                total_pages AS \"total_pages!\",\n                response_current_page AS \"response_current_page!\"\n            FROM search_entities(\n                $1,\n                $2,\n                $3,\n                $4,\n                $5,\n                $6,\n                $7,\n                $8,\n                $9,\n                $10,\n                $11,\n                $12,\n                $13,\n                $14,\n                $15,\n                $16\n            )\n            ",
   "describe": {
     "columns": [
       {
@@ -20,36 +20,41 @@
       },
       {
         "ordinal": 3,
+        "name": "tags_ids!",
+        "type_info": "UuidArray"
+      },
+      {
+        "ordinal": 4,
         "name": "family_id!",
         "type_info": "Uuid"
       },
       {
-        "ordinal": 4,
+        "ordinal": 5,
         "name": "display_name!",
         "type_info": "Text"
       },
       {
-        "ordinal": 5,
+        "ordinal": 6,
         "name": "parents!: Json<Vec<ParentRepresentation>>",
         "type_info": "Jsonb"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "locations!: Json<Vec<LocationRepresentation>>",
         "type_info": "Jsonb"
       },
       {
-        "ordinal": 7,
+        "ordinal": 8,
         "name": "total_results!",
         "type_info": "Int8"
       },
       {
-        "ordinal": 8,
+        "ordinal": 9,
         "name": "total_pages!",
         "type_info": "Int8"
       },
       {
-        "ordinal": 9,
+        "ordinal": 10,
         "name": "response_current_page!",
         "type_info": "Int8"
       }
@@ -84,8 +89,9 @@
       null,
       null,
       null,
+      null,
       null
     ]
   },
-  "hash": "3ec8dc8e90248fb05b43c65ed1944afe19b1248c62a022da4df181a93a11bd0b"
+  "hash": "002098f1a315b8c74231d5ab967902959954ca33688c0980f862d6efc849df23"
 }

@@ -35,6 +35,16 @@
                 {{ props.entity.display_name }}
               </div>
             </div>
+            <div
+              v-if="(sortedTags.length) > 0"
+              class="flex flex-wrap gap-1"
+            >
+              <DisplayedTag
+                v-for="tag in sortedTags"
+                :key="tag.id"
+                :tag="tag"
+              />
+            </div>
 
             <div
               class="p-1"
@@ -87,6 +97,10 @@ const props = defineProps<{
 defineEmits(['entity-click'])
 
 const locations = computed(() => props.entity.locations.map(loc => [loc.x, loc.y]))
+
+const sortedTags = computed(() => {
+  return [...props.entity.tags_ids].map(tagId => state.tag(tagId)).filter(tag => tag != undefined).sort((a, b) => a.title.localeCompare(b.title))
+})
 </script>
 
 <style>

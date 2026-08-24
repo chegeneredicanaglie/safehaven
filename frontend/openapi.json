@@ -4808,6 +4808,7 @@
           "id",
           "entity_id",
           "category_id",
+          "tags_ids",
           "family_id",
           "display_name"
         ],
@@ -4844,6 +4845,13 @@
             "type": "string",
             "nullable": true
           },
+          "tags_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
           "web_mercator_x": {
             "type": "number",
             "format": "double",
@@ -4862,6 +4870,7 @@
           "id",
           "entity_id",
           "category_id",
+          "tags_ids",
           "family_id",
           "display_name",
           "parents",
@@ -4897,6 +4906,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ParentRepresentation"
+            }
+          },
+          "tags_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
             }
           }
         }
