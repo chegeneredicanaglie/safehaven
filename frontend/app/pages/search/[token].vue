@@ -37,6 +37,7 @@
               />
 
               <Button
+                v-if="state.families.length > 1"
                 type="button"
                 severity="secondary"
                 :label="state.activeFamily.title"
@@ -89,6 +90,7 @@
 
             <div class="flex gap-2">
               <Button
+                v-if="state.families.length > 1"
                 type="button"
                 severity="secondary"
                 :label="state.activeFamily.title"
