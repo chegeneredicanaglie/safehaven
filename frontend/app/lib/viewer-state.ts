@@ -104,7 +104,7 @@ export class AppState {
         entity: this._activeEntity,
         family: this.familiesLookupTable[this._activeEntity.family_id]!,
         category: this.categoriesLookupTable[this._activeEntity.category_id]!,
-        tags: [],
+        tags: this._activeEntity!.tags_ids.map(tagId => this.tagsLookupTable[tagId]!),
       }
     }
 
@@ -450,6 +450,10 @@ export class AppState {
         coordinates: [cluster.center_x, cluster.center_y],
       })),
     )
+  }
+
+  tag(tagId: string): Tag | undefined {
+    return this.tagsLookupTable[tagId]
   }
 }
 
