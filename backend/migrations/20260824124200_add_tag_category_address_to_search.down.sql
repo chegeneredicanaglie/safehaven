@@ -160,7 +160,7 @@ CREATE INDEX entities_caches_web_mercator_location_idx ON entities_caches USING 
 CREATE INDEX entities_caches_full_text_search_idx ON entities_caches USING GIST(full_text_search_ts);
 CREATE INDEX entities_caches_display_name_gist_trgm ON entities_caches USING GIST(display_name gist_trgm_ops);
 
--- restore previous version of search_entities
+-- restore previous version of search_entities and search_entities_admin
 CREATE OR REPLACE FUNCTION search_entities(
     search_query TEXT,
     geographic_restriction TEXT,
@@ -330,6 +330,104 @@ BEGIN
             CEIL(tc.total_results / page_size::FLOAT)::BIGINT AS total_pages,
             current_page as response_current_page
         FROM ranked_entities re, total_count tc
+        LIMIT page_size
+        OFFSET (current_page - 1) * page_size
+    )
+    SELECT * FROM paginated_results;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION search_entities_admin(
+    search_query TEXT,
+    input_family_id UUID,
+
+    current_page BIGINT,
+    page_size BIGINT,
+
+    active_categories_ids UUID[],
+    required_tags_ids UUID[],
+    excluded_tags_ids UUID[],
+
+    enum_constraints JSONB
+) RETURNS TABLE (
+    id UUID,
+    entity_id UUID,
+    category_id UUID,
+    tags_ids UUID[],
+    family_id UUID,
+    display_name TEXT,
+    hidden BOOL,
+
+    total_results BIGINT,
+    total_pages BIGINT,
+    response_current_page BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH filtered_entities AS (
+        SELECT
+            ec.*,
+            CASE
+                WHEN ec.display_name ILIKE '%' || lower(search_query) || '%' THEN 1 ELSE 0
+            END AS exact_match_score
+        FROM entities_caches ec
+        WHERE
+            (
+                search_query IS NULL OR search_query = ''
+                OR ec.display_name ILIKE '%' || lower(search_query)  || '%'
+                OR (full_text_search_ts @@ plainto_tsquery(search_query))
+            )
+            AND ec.family_id = input_family_id
+            AND ec.category_id = ANY(active_categories_ids)
+            -- Categories and tags constraints
+            AND (array_length(required_tags_ids, 1) = 0 OR required_tags_ids <@ ec.tags_ids)
+            AND NOT (ec.tags_ids && excluded_tags_ids)
+            -- Enum constraints
+            AND (
+                enum_constraints IS NULL OR
+                enum_constraints = '{}'::jsonb OR
+                (
+                    SELECT bool_and(
+                        ec.enums->key ?| array(SELECT jsonb_array_elements_text(value))
+                    )
+                    FROM jsonb_each(enum_constraints) AS constraints(key, value)
+                    WHERE key IS NOT NULL AND ec.enums ? key
+                )
+            )
+    ),
+    ranked_entities AS (
+        SELECT DISTINCT ON (fe.entity_id)
+            fe.id,
+            fe.entity_id,
+            fe.category_id,
+            fe.tags_ids,
+            fe.family_id,
+            fe.display_name,
+            fe.hidden,
+            RANK() OVER (
+                ORDER BY fe.entity_id, exact_match_score DESC,
+                    ts_rank(full_text_search_ts, plainto_tsquery(search_query)) DESC
+            ) AS rank
+        FROM filtered_entities fe
+    ),
+    total_count AS (
+        SELECT COUNT(*) AS total_results FROM ranked_entities
+    ),
+    paginated_results AS (
+        SELECT
+            re.id,
+            re.entity_id,
+            re.category_id,
+            re.tags_ids,
+            re.family_id,
+            re.display_name,
+            re.hidden,
+
+            tc.total_results,
+            CEIL(tc.total_results / page_size::FLOAT)::BIGINT AS total_pages,
+            current_page as response_current_page
+        FROM ranked_entities re, total_count tc
+        ORDER BY rank
         LIMIT page_size
         OFFSET (current_page - 1) * page_size
     )
