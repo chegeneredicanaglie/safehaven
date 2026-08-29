@@ -131,7 +131,7 @@ SELECT
     NULL AS parent_id,
     NULL AS parent_display_name,
     ei.hidden,
-    to_tsvector(ei.display_name || ' ' || COALESCE(ei.indexed_string_values, '') || ' ' || COALESCE((dl.value ->> 'plain_text'), '')) AS full_text_search_ts,
+    ei.display_name || ' ' || COALESCE(ei.indexed_string_values, '') || ' ' || COALESCE((dl.value ->> 'plain_text'), '') AS full_text_search_ts,
     ei.enums
 FROM direct_locations dl
 JOIN entities_information ei ON dl.entity_id = ei.entity_id
@@ -154,7 +154,7 @@ SELECT
     tl.parent_id,
     tl.parent_display_name,
     ei.hidden,
-    to_tsvector(ei.display_name || ' ' || COALESCE(ei.indexed_string_values, '') || ' ' || COALESCE((tl.value ->> 'plain_text'), '')) AS full_text_search_ts,
+    ei.display_name || ' ' || COALESCE(ei.indexed_string_values, '') || ' ' || COALESCE((tl.value ->> 'plain_text'), '') AS full_text_search_ts,
     ei.enums
 FROM transitive_locations tl
 JOIN entities_information ei ON tl.child_id = ei.entity_id;
@@ -172,7 +172,7 @@ CREATE INDEX entities_caches_hidden_idx ON entities_caches (hidden);
 CREATE INDEX entities_caches_enums_idx ON entities_caches USING GIN (enums);
 CREATE INDEX entities_caches_gps_location_idx ON entities_caches USING GIST((ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)));
 CREATE INDEX entities_caches_web_mercator_location_idx ON entities_caches USING GIST(web_mercator_location);
-CREATE INDEX entities_caches_full_text_search_idx ON entities_caches USING GIST(full_text_search_ts);
+CREATE INDEX entities_caches_full_text_search_idx ON entities_caches USING GIST(full_text_search_ts gist_trgm_ops);
 CREATE INDEX entities_caches_display_name_gist_trgm ON entities_caches USING GIST(display_name gist_trgm_ops);
 
 -- Update the search_entities function to remove group by full_text_search_ts
@@ -237,7 +237,7 @@ BEGIN
             END AS exact_match_score,
             CASE
                 WHEN search_query IS NOT NULL AND search_query <> '' THEN
-                    ts_rank(full_text_search_ts, plainto_tsquery(search_query))
+                    strict_word_similarity(search_query, full_text_search_ts)
                 ELSE 0
             END AS rank
         FROM included_entities ie
@@ -245,7 +245,7 @@ BEGIN
             (
                 search_query IS NULL OR search_query = '' OR (
                     ie.display_name ILIKE '%' || lower(search_query) || '%'
-                        OR (full_text_search_ts @@ plainto_tsquery(search_query))
+                        OR (search_query <<% full_text_search_ts)
                     )
             )
             AND (
@@ -352,3 +352,102 @@ BEGIN
     SELECT * FROM paginated_results;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION search_entities_admin(
+    search_query TEXT,
+    input_family_id UUID,
+
+    current_page BIGINT,
+    page_size BIGINT,
+
+    active_categories_ids UUID[],
+    required_tags_ids UUID[],
+    excluded_tags_ids UUID[],
+
+    enum_constraints JSONB
+) RETURNS TABLE (
+    id UUID,
+    entity_id UUID,
+    category_id UUID,
+    tags_ids UUID[],
+    family_id UUID,
+    display_name TEXT,
+    hidden BOOL,
+
+    total_results BIGINT,
+    total_pages BIGINT,
+    response_current_page BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH filtered_entities AS (
+        SELECT
+            ec.*,
+            CASE
+                WHEN ec.display_name ILIKE '%' || lower(search_query) || '%' THEN 1 ELSE 0
+            END AS exact_match_score
+        FROM entities_caches ec
+        WHERE
+            (
+                search_query IS NULL OR search_query = ''
+                OR ec.display_name ILIKE '%' || lower(search_query)  || '%'
+                OR (search_query <<% full_text_search_ts)
+            )
+            AND ec.family_id = input_family_id
+            AND ec.category_id = ANY(active_categories_ids)
+            -- Categories and tags constraints
+            AND (array_length(required_tags_ids, 1) = 0 OR required_tags_ids <@ ec.tags_ids)
+            AND NOT (ec.tags_ids && excluded_tags_ids)
+            -- Enum constraints
+            AND (
+                enum_constraints IS NULL OR
+                enum_constraints = '{}'::jsonb OR
+                (
+                    SELECT bool_and(
+                        ec.enums->key ?| array(SELECT jsonb_array_elements_text(value))
+                    )
+                    FROM jsonb_each(enum_constraints) AS constraints(key, value)
+                    WHERE key IS NOT NULL AND ec.enums ? key
+                )
+            )
+    ),
+    ranked_entities AS (
+        SELECT DISTINCT ON (fe.entity_id)
+            fe.id,
+            fe.entity_id,
+            fe.category_id,
+            fe.tags_ids,
+            fe.family_id,
+            fe.display_name,
+            fe.hidden,
+            RANK() OVER (
+                ORDER BY fe.entity_id, exact_match_score DESC,
+                    strict_word_similarity(search_query, full_text_search_ts) DESC
+            ) AS rank
+        FROM filtered_entities fe
+    ),
+    total_count AS (
+        SELECT COUNT(*) AS total_results FROM ranked_entities
+    ),
+    paginated_results AS (
+        SELECT
+            re.id,
+            re.entity_id,
+            re.category_id,
+            re.tags_ids,
+            re.family_id,
+            re.display_name,
+            re.hidden,
+
+            tc.total_results,
+            CEIL(tc.total_results / page_size::FLOAT)::BIGINT AS total_pages,
+            current_page as response_current_page
+        FROM ranked_entities re, total_count tc
+        ORDER BY rank
+        LIMIT page_size
+        OFFSET (current_page - 1) * page_size
+    )
+    SELECT * FROM paginated_results;
+END;
+$$ LANGUAGE plpgsql;
+
