@@ -1,7 +1,6 @@
 <template>
   <Button
     :label="$t('cmp.viewer.commentAddForm.newComment')"
-    rounded
     outlined
     @click="formVisible=true"
   >
@@ -20,7 +19,7 @@
     v-model:visible="formVisible"
     modal
     closable
-    class="w-full md:max-w-[30rem]"
+    class="w-full md:max-w-[42rem]"
     :header="props.family.comment_form.title"
     :content-props="{ onClick: (event: Event) => { event.stopPropagation() } }"
   >
@@ -57,12 +56,12 @@
     <form
       v-for="page in Array.from({ length: page_count+1 }, (_, i) => i+1)"
       :key="`Page ${page}`"
-      class="flex grow flex-col gap-4 max-w-[30rem]"
+      class="flex grow flex-col gap-4"
       @submit.prevent="() => page == page_count ? onSave() : curr_page+=1"
     >
       <div
         v-if="curr_page == page"
-        class="flex grow flex-col gap-4 max-w-[30rem]"
+        class="flex grow flex-col gap-4"
       >
         <template v-if="page < page_count + 1">
           <FormDynamicField
