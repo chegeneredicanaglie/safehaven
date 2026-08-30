@@ -259,10 +259,13 @@ const isValid = computed(() => {
 
 emit('isValid', isValid.value)
 
+watch(isValid, (newValue) => {
+  emit('isValid', newValue)
+})
+
 async function updateField(value: undefined | FieldContentMap[FormField['field_type']]) {
   emit('update:fieldContent', value)
   await nextTick()
-  emit('isValid', isValid.value)
 }
 
 function initializeValue() {
