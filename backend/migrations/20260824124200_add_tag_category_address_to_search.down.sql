@@ -1,5 +1,6 @@
 -- Drop the materialized view (this will also remove its indexes)
 DROP MATERIALIZED VIEW entities_caches;
+DROP MATERIALIZED VIEW words;
 
 -- Recreate the materialized view with a deterministic ID
 -- Copied and tweaked from 20240322224230_create_entities_cache.sql
@@ -159,6 +160,12 @@ CREATE INDEX entities_caches_gps_location_idx ON entities_caches USING GIST((ST_
 CREATE INDEX entities_caches_web_mercator_location_idx ON entities_caches USING GIST(web_mercator_location);
 CREATE INDEX entities_caches_full_text_search_idx ON entities_caches USING GIST(full_text_search_ts);
 CREATE INDEX entities_caches_display_name_gist_trgm ON entities_caches USING GIST(display_name gist_trgm_ops);
+
+CREATE OR REPLACE FUNCTION refresh_entities_caches() RETURNS void AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW CONCURRENTLY entities_caches;
+END;
+$$ LANGUAGE plpgsql;
 
 -- restore previous version of search_entities and search_entities_admin
 CREATE OR REPLACE FUNCTION search_entities(
