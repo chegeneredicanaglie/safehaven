@@ -9,219 +9,218 @@
       :show-search-button="false"
     />
 
-    <Card
-      class="m-2 p-2"
-    >
-      <template #header>
-        <div class="flex flex-col gap-1">
-          <span class="text-2xl font-bold">
-            {{ $t('page.search.token.search') }}
-          </span>
-          <span
-            v-if="state.permissions?.can_add_comment && !state.permissions?.can_access_entity"
-            class="text-muted-color"
-          >
-            {{ $t('page.search.token.addCommentHint') }}
-          </span>
-        </div>
-      </template>
-
-      <template #content>
-        <form @submit.prevent="submitSearch">
-          <div class="hidden sm:block">
-            <InputGroup>
-              <InputText
-                v-model="query"
-                :placeholder="$t('page.search.token.searchPlaceholder')
-                  + (state.permissions?.can_list_without_query ? '' : $t('page.search.token.minChars'))"
-              />
-
-              <Button
-                v-if="state.families.length > 1"
-                type="button"
-                severity="secondary"
-                :label="state.activeFamily.title"
-                @click="showFamilySwitcher"
-              >
-                <template #icon>
-                  <AppIcon
-                    :icon-name="state.activeFamily.icon_hash!"
-                    dynamic
-                    class="mr-1"
-                    size="20px"
-                  />
-                </template>
-              </Button>
-
-              <Button
-                type="button"
-                severity="warn"
-                :label="$t('page.search.token.filters')"
-                @click="showCriteriasModal()"
-              >
-                <template #icon>
-                  <AppIcon
-                    class="mr-1"
-                    icon-name="filter"
-                  />
-                </template>
-              </Button>
-
-              <Button type="submit">
-                <template #icon>
-                  <AppIcon icon-name="search" />
-                </template>
-              </Button>
-            </InputGroup>
+    <div class="h-full flex flex-col gap-y-6 md:gap-y-8 px-2 py-6 md:px-16 md:py-8">
+      <Card>
+        <template #title>
+          <div class="flex flex-col gap-1">
+            <span class="text-2xl font-bold">
+              {{ $t('page.search.token.search') }}
+            </span>
+            <span
+              v-if="state.permissions?.can_add_comment && !state.permissions?.can_access_entity"
+              class="text-muted-color"
+            >
+              {{ $t('page.search.token.addCommentHint') }}
+            </span>
           </div>
-          <div class="sm:hidden flex flex-col justify-end items-end gap-2">
-            <InputGroup>
-              <InputText
-                v-model="query"
-                :placeholder="$t('page.search.token.searchPlaceholder')
-                  + (state.permissions?.can_list_without_query ? '' : $t('page.search.token.minChars'))"
-              />
-              <Button type="submit">
-                <template #icon>
-                  <AppIcon icon-name="search" />
-                </template>
-              </Button>
-            </InputGroup>
+        </template>
 
-            <div class="flex gap-2">
-              <Button
-                v-if="state.families.length > 1"
-                type="button"
-                severity="secondary"
-                :label="state.activeFamily.title"
-                @click="showFamilySwitcher"
-              >
-                <template #icon>
-                  <AppIcon
-                    :icon-name="state.activeFamily.icon_hash!"
-                    dynamic
-                    class="mr-1"
-                    size="20px"
-                  />
-                </template>
-              </Button>
+        <template #content>
+          <form @submit.prevent="submitSearch">
+            <div class="hidden sm:block">
+              <InputGroup>
+                <InputText
+                  v-model="query"
+                  :placeholder="$t('page.search.token.searchPlaceholder')
+                    + (state.permissions?.can_list_without_query ? '' : $t('page.search.token.minChars'))"
+                />
 
-              <Button
-                type="button"
-                severity="warn"
-                :label="$t('page.search.token.filters')"
-                @click="showCriteriasModal()"
-              >
-                <template #icon>
-                  <AppIcon
-                    class="mr-1"
-                    icon-name="filter"
-                  />
-                </template>
-              </Button>
+                <Button
+                  v-if="state.families.length > 1"
+                  type="button"
+                  severity="secondary"
+                  :label="state.activeFamily.title"
+                  @click="showFamilySwitcher"
+                >
+                  <template #icon>
+                    <AppIcon
+                      :icon-name="state.activeFamily.icon_hash!"
+                      dynamic
+                      class="mr-1"
+                      size="20px"
+                    />
+                  </template>
+                </Button>
+
+                <Button
+                  type="button"
+                  severity="warn"
+                  :label="$t('page.search.token.filters')"
+                  @click="showCriteriasModal()"
+                >
+                  <template #icon>
+                    <AppIcon
+                      class="mr-1"
+                      icon-name="filter"
+                    />
+                  </template>
+                </Button>
+
+                <Button type="submit">
+                  <template #icon>
+                    <AppIcon icon-name="search" />
+                  </template>
+                </Button>
+              </InputGroup>
             </div>
+            <div class="sm:hidden flex flex-col justify-end items-end gap-2">
+              <InputGroup>
+                <InputText
+                  v-model="query"
+                  :placeholder="$t('page.search.token.searchPlaceholder')
+                    + (state.permissions?.can_list_without_query ? '' : $t('page.search.token.minChars'))"
+                />
+                <Button type="submit">
+                  <template #icon>
+                    <AppIcon icon-name="search" />
+                  </template>
+                </Button>
+              </InputGroup>
+
+              <div class="flex gap-2">
+                <Button
+                  v-if="state.families.length > 1"
+                  type="button"
+                  severity="secondary"
+                  :label="state.activeFamily.title"
+                  @click="showFamilySwitcher"
+                >
+                  <template #icon>
+                    <AppIcon
+                      :icon-name="state.activeFamily.icon_hash!"
+                      dynamic
+                      class="mr-1"
+                      size="20px"
+                    />
+                  </template>
+                </Button>
+
+                <Button
+                  type="button"
+                  severity="warn"
+                  :label="$t('page.search.token.filters')"
+                  @click="showCriteriasModal()"
+                >
+                  <template #icon>
+                    <AppIcon
+                      class="mr-1"
+                      icon-name="filter"
+                    />
+                  </template>
+                </Button>
+              </div>
+            </div>
+          </form>
+        </template>
+      </Card>
+
+      <Popover ref="familySwitcher">
+        <ViewerFamilySwitcher />
+      </Popover>
+
+      <Card
+        v-if="currentEntitiesResults"
+      >
+        <template #title>
+          <span class="text-2xl font-bold">
+            {{ currentEntitiesResults!.total_results }} {{ resultLabel() }}
+          </span>
+        </template>
+
+        <template #content>
+          <DataView
+            :value="currentEntitiesResults!.entities"
+            :first="firstRow"
+            :rows="pageSize"
+            :rows-per-page-options="[5, 10, 20, 50]"
+            :total-records="currentEntitiesResults!.total_results"
+            data-key="id"
+            paginator
+            lazy
+            layout="list"
+            @page="onPage"
+          >
+            <template #list>
+              <ViewerFullResult
+                v-for="entity in currentEntitiesResults!.entities"
+                :key="`${entity.id}-${researchIncrement}`"
+                :entity="entity"
+                class="p-col-12"
+                @entity-click="selectedCachedEntity"
+              />
+            </template>
+          </DataView>
+        </template>
+      </Card>
+      <ProgressSpinner
+        v-if="loading"
+        :aria-label="t('page.search.token.loading')"
+        class="inset-0 flex items-center justify-center"
+      />
+
+      <FullScreenDialog
+        v-model:visible="state.hasActiveEntity"
+        maximizable
+        :style="{ width: '50rem' }"
+        :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+        modal
+        dismissable-mask
+        @hide="stopEntityLoad"
+      >
+        <template #header>
+          <div class="flex flex-col gap-2 items-start">
+            <CategoryTag :category="state.activeEntity!.category" />
+            <h3 class="grow font-bold text-lg m-0">
+              {{ state.activeEntity!.entity.display_name }}
+            </h3>
           </div>
-        </form>
-      </template>
-    </Card>
+        </template>
 
-    <Popover ref="familySwitcher">
-      <ViewerFamilySwitcher />
-    </Popover>
+        <ViewerCommentAddForm
+          v-if="state.permissions?.can_add_comment && state.activeEntity != null"
+          :family="state.activeEntity!.family"
+          :entity="state.activeEntity!.entity"
+        />
+        <ViewerCommonEntityDisplayer
+          v-if="state.activeEntity && state.activeEntity.type == 'full'"
+          :entity="state.activeEntity!"
+          :categories="state.categories"
+          @entity-selected="displayEntityId"
+        />
+        <Skeleton
+          v-else
+          height="10rem"
+          class="mt-4 aspect-video w-full"
+        />
+      </FullScreenDialog>
 
-    <Card
-      v-if="currentEntitiesResults"
-      class="m-2 p-2"
-    >
-      <template #header>
-        <span class="text-2xl font-bold">
-          {{ currentEntitiesResults!.total_results }} {{ resultLabel() }}
-        </span>
-      </template>
+      <FullScreenDialog
+        v-model:visible="showCriterias"
+        maximizable
+        :header="$t('page.search.token.filters')"
+        :style="{ width: '50rem' }"
+        :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+        modal
+      >
+        <ViewerFilterConfig
+          v-model:filtering-tags="state.filteringTags"
+          v-model:filtering-categories="state.filteringCategories"
+          v-model:filtering-enums="state.filteringEnums"
+        />
+      </FullScreenDialog>
 
-      <template #content>
-        <DataView
-          :value="currentEntitiesResults!.entities"
-          :first="firstRow"
-          :rows="pageSize"
-          :rows-per-page-options="[5, 10, 20, 50]"
-          :total-records="currentEntitiesResults!.total_results"
-          data-key="id"
-          paginator
-          lazy
-          layout="list"
-          @page="onPage"
-        >
-          <template #list>
-            <ViewerFullResult
-              v-for="entity in currentEntitiesResults!.entities"
-              :key="`${entity.id}-${researchIncrement}`"
-              :entity="entity"
-              class="p-col-12"
-              @entity-click="selectedCachedEntity"
-            />
-          </template>
-        </DataView>
-      </template>
-    </Card>
-    <ProgressSpinner
-      v-if="loading"
-      :aria-label="t('page.search.token.loading')"
-      class="inset-0 flex items-center justify-center"
-    />
-
-    <FullScreenDialog
-      v-model:visible="state.hasActiveEntity"
-      maximizable
-      :style="{ width: '50rem' }"
-      :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-      modal
-      dismissable-mask
-      @hide="stopEntityLoad"
-    >
-      <template #header>
-        <div class="flex items-center gap-2">
-          <CategoryTag :category="state.activeEntity!.category" />
-          <h3 class="grow font-bold text-lg m-0">
-            {{ state.activeEntity!.entity.display_name }}
-          </h3>
-        </div>
-      </template>
-
-      <ViewerCommentAddForm
-        v-if="state.permissions?.can_add_comment && state.activeEntity != null"
-        :family="state.activeEntity!.family"
-        :entity="state.activeEntity!.entity"
-      />
-      <ViewerCommonEntityDisplayer
-        v-if="state.activeEntity && state.activeEntity.type == 'full'"
-        :entity="state.activeEntity!"
-        :categories="state.categories"
-        @entity-selected="displayEntityId"
-      />
-      <Skeleton
-        v-else
-        height="10rem"
-        class="mt-4 aspect-video w-full"
-      />
-    </FullScreenDialog>
-
-    <FullScreenDialog
-      v-model:visible="showCriterias"
-      maximizable
-      :header="$t('page.search.token.filters')"
-      :style="{ width: '50rem' }"
-      :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-      modal
-    >
-      <ViewerFilterConfig
-        v-model:filtering-tags="state.filteringTags"
-        v-model:filtering-categories="state.filteringCategories"
-        v-model:filtering-enums="state.filteringEnums"
-      />
-    </FullScreenDialog>
-
-    <StartPopup />
+      <StartPopup />
+    </div>
   </div>
 </template>
 

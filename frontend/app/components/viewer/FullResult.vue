@@ -2,10 +2,10 @@
   <div>
     <div class="col-span-12">
       <div
-        class="flex flex-col sm:flex-row sm:items-stretch p-6 gap-4"
+        class="flex flex-col md:flex-row md:items-stretch py-4 gap-4"
       >
         <div
-          class="md:w-40 flex flex-col"
+          class="h-40 w-full md:h-28 md:w-40 flex flex-col"
         >
           <SingleEntityMap
             v-if="props.entity.locations.length > 0"
@@ -25,7 +25,7 @@
         </div>
 
         <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
-          <div class="flex flex-row md:flex-col justify-between items-start gap-2">
+          <div class="flex flex-col justify-between items-start gap-2">
             <div>
               <CategoryTag
                 :category="state.getCategory(props.entity.category_id)"
@@ -46,10 +46,7 @@
               />
             </div>
 
-            <div
-              class="p-1"
-              style="border-radius: 30px"
-            >
+            <div>
               <ul>
                 <li
                   v-for="(loc, idx) in props.entity.locations"

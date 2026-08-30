@@ -124,42 +124,44 @@
           <Select
             :model-value="event.type"
             :placeholder="$t('cmp.form.dynamicField.eventTypePlaceholder')"
-            class="grow"
+            class="flex-grow min-w-0 basis-64"
             :options="(props.formField as Extract<FieldTypeMetadataEnum, { field_type: 'EventList' }>).field_type_metadata?.event_types"
             option-value="value"
             option-label="label"
             @update:model-value="(new_value: any) => { const fieldContent = [...props.fieldContent as EntityOrCommentEvent[]]; fieldContent[ev_index]!.type = new_value; updateField(fieldContent) }"
           />
           <!-- @update:model-value="new_type => (props.fieldContent as EntityOrCommentEvent[])[ev_index] = { type: new_type, date: event.date, details: event.details }" -->
-          <DatePicker
-            :model-value="event.date"
-            class="w-40"
-            :placeholder="$t('cmp.form.dynamicField.datePlaceholder')"
-            :date-format="$t('cmp.form.dynamicField.dateFormat')"
-            show-icon
-            fluid
-            icon-display="input"
-            show-button-bar
-            @update:model-value="(new_value: any) => { const fieldContent = [...props.fieldContent as EntityOrCommentEvent[]]; fieldContent[ev_index]!.date = new_value; updateField(fieldContent) }"
-          />
+          <span class="flex gap-4 flex-grow basis-64">
+            <DatePicker
+              :model-value="event.date"
+              class="flex-grow"
+              :placeholder="$t('cmp.form.dynamicField.datePlaceholder')"
+              :date-format="$t('cmp.form.dynamicField.dateFormat')"
+              show-icon
+              fluid
+              icon-display="input"
+              show-button-bar
+              @update:model-value="(new_value: any) => { const fieldContent = [...props.fieldContent as EntityOrCommentEvent[]]; fieldContent[ev_index]!.date = new_value; updateField(fieldContent) }"
+            />
 
-          <Button
-            rounded
-            outlined
-            class="m-0 p-1"
-            severity="primary"
-            @click="() => { const fieldContent = [...props.fieldContent as EntityOrCommentEvent[]]; fieldContent.splice(ev_index, 1); updateField(fieldContent) }"
-          >
-            <template #default>
-              <AppIcon
-                icon-name="delete"
-                size="18px"
-              />
-            </template>
-          </Button>
+            <Button
+              rounded
+              outlined
+              class="flex-shrink-0"
+              severity="primary"
+              @click="() => { const fieldContent = [...props.fieldContent as EntityOrCommentEvent[]]; fieldContent.splice(ev_index, 1); updateField(fieldContent) }"
+            >
+              <template #default>
+                <AppIcon
+                  icon-name="delete"
+                  size="18px"
+                />
+              </template>
+            </Button>
+          </span>
         </span>
 
-        <span class="flex items-center gap-2">
+        <span class="flex flex-col gap-2">
           <label for="">{{ $t('cmp.form.dynamicField.optionalDetails') }}: </label>
           <Textarea
             :model-value="event.details"
@@ -257,10 +259,13 @@ const isValid = computed(() => {
 
 emit('isValid', isValid.value)
 
+watch(isValid, (newValue) => {
+  emit('isValid', newValue)
+})
+
 async function updateField(value: undefined | FieldContentMap[FormField['field_type']]) {
   emit('update:fieldContent', value)
   await nextTick()
-  emit('isValid', isValid.value)
 }
 
 function initializeValue() {

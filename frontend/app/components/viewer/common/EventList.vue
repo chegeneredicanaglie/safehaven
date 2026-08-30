@@ -42,11 +42,11 @@
 
           <AccordionContent>
             <p>
-              <strong>{{ $t('cmp.viewer.common.eventList.date') }} :</strong> {{ event.date ? $d(event.date, { dateStyle: 'short' }) : $t('cmp.viewer.common.eventList.noDate') }}
+              <strong>{{ $t('cmp.viewer.common.eventList.date') }}:</strong> {{ event.date ? $d(event.date, { dateStyle: 'short' }) : $t('cmp.viewer.common.eventList.noDate') }}
             </p>
 
             <p v-if="event.details && event.details.length > 0">
-              <strong>{{ $t('cmp.viewer.common.eventList.comment') }} :</strong>
+              <strong>{{ $t('cmp.viewer.common.eventList.comment') }}:</strong>
               <br>
               {{ event.details }}
             </p>

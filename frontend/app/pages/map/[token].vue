@@ -36,7 +36,7 @@
       <template #header>
         <div
           v-if="state.activeEntity"
-          class="flex items-center justify-start gap-2"
+          class="flex flex-col gap-2 items-start"
         >
           <CategoryTag
             :category="state.activeEntity!.category"

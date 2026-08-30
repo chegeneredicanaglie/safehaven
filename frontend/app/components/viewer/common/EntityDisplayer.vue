@@ -1,7 +1,7 @@
 <template>
   <div>
     <Tabs v-model:value="tabValue">
-      <TabList>
+      <TabList class="overflow-x-scroll">
         <Tab
           v-if="hasChildren"
           value="0"
@@ -232,3 +232,9 @@ watch(
   },
 )
 </script>
+
+<style scoped>
+.p-tabpanels {
+  padding-inline: 0;
+}
+</style>
