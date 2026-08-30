@@ -177,12 +177,16 @@ CREATE INDEX entities_caches_web_mercator_location_idx ON entities_caches USING 
 CREATE INDEX entities_caches_full_text_search_idx ON entities_caches USING GIST(full_text_search_ts);
 CREATE INDEX entities_caches_display_name_gist_trgm ON entities_caches USING GIST(display_name gist_trgm_ops);
 
-CREATE MATERIALIZED VIEW words AS SELECT word FROM ts_stat('SELECT to_tsvector(''simple'', full_text_search_s) FROM entities_caches');
+CREATE MATERIALIZED VIEW words AS 
+SELECT word 
+FROM ts_stat('SELECT to_tsvector(''simple'', full_text_search_s) FROM entities_caches');
+
+CREATE UNIQUE INDEX words_idx ON words(word);
 
 CREATE OR REPLACE FUNCTION refresh_entities_caches() RETURNS void AS $$
 BEGIN
     REFRESH MATERIALIZED VIEW CONCURRENTLY entities_caches;
-    REFRESH MATERIALIZED VIEW words;
+    REFRESH MATERIALIZED VIEW CONCURRENTLY words;
 END;
 $$ LANGUAGE plpgsql;
 
