@@ -160,10 +160,6 @@ function fieldsToDisplay() {
       f.field_type === 'EnumSingleOption'
       && f.field_type_metadata?.options.find(o => o.value == getKeyValue(f.key))?.hidden),
     )
-    .filter(f => !(
-      f.field_type === 'EventList'
-      && (getKeyValue(f.key).length == 0)
-    ))
 
   return fields
 }

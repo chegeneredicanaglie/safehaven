@@ -2,7 +2,7 @@
   <div>
     <div class="col-span-12">
       <div
-        class="flex flex-col sm:flex-row sm:items-stretch py-4 gap-4"
+        class="flex flex-col md:flex-row md:items-stretch py-4 gap-4"
       >
         <div
           class="h-40 w-full md:h-28 md:w-40 flex flex-col"
