@@ -162,7 +162,7 @@
       </template>
     </Card>
 
-    <Dialog
+    <FullScreenDialog
       v-if="state.hasActiveEntity"
       v-model:visible="state.hasActiveEntity"
       maximizable
@@ -191,9 +191,9 @@
         :categories="state.categories"
         @entity-selected="displayEntityId"
       />
-    </Dialog>
+    </FullScreenDialog>
 
-    <Dialog
+    <FullScreenDialog
       v-model:visible="showCriterias"
       maximizable
       :header="$t('page.search.token.filters')"
@@ -206,7 +206,7 @@
         v-model:filtering-categories="state.filteringCategories"
         v-model:filtering-enums="state.filteringEnums"
       />
-    </Dialog>
+    </FullScreenDialog>
 
     <StartPopup />
   </div>
@@ -214,6 +214,7 @@
 
 <script setup lang="ts">
 import type { PageState } from 'primevue/paginator'
+import FullScreenDialog from '~/components/viewer/common/FullScreenDialog.vue'
 import type { ViewerPaginatedCachedEntities } from '~/lib'
 import state from '~/lib/viewer-state'
 

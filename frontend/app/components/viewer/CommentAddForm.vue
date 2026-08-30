@@ -16,11 +16,11 @@
     </template>
   </Button>
 
-  <Dialog
+  <FullScreenDialog
     v-model:visible="formVisible"
     modal
     closable
-    class="w-full max-w-[30rem]"
+    class="w-full md:max-w-[30rem]"
     :header="props.family.comment_form.title"
     :content-props="{ onClick: (event: Event) => { event.stopPropagation() } }"
   >
@@ -110,13 +110,14 @@
         </div>
       </div>
     </form>
-  </Dialog>
+  </FullScreenDialog>
 </template>
 
 <script setup lang="ts">
 import type { EntityOrCommentData, Family, FormField, PublicEntity, PublicNewComment, ViewerSearchedCachedEntity } from '~/lib'
 import { isValidRichText, isValidText } from '~/lib/validation'
 import state from '~/lib/viewer-state'
+import FullScreenDialog from '~/components/viewer/common/FullScreenDialog.vue'
 
 const formVisible = ref(false)
 
