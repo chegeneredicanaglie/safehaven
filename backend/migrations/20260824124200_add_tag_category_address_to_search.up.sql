@@ -179,7 +179,7 @@ CREATE INDEX entities_caches_display_name_gist_trgm ON entities_caches USING GIS
 
 CREATE MATERIALIZED VIEW words AS 
 SELECT word 
-FROM ts_stat('SELECT to_tsvector(''simple'', full_text_search_s) FROM entities_caches');
+FROM ts_stat('SELECT to_tsvector(''simple'', full_text_search_s) FROM public.entities_caches');
 
 CREATE UNIQUE INDEX words_idx ON words(word);
 
