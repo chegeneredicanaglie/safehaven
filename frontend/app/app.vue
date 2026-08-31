@@ -1,3 +1,4 @@
+<!-- eslint-disable @intlify/vue-i18n/no-raw-text -->
 <template>
   <NuxtLoadingIndicator />
 
@@ -28,6 +29,31 @@
       <span class="max-w-96">{{ slotProps.message.message }}</span>
     </template>
   </ConfirmDialog>
+
+  <a
+    target="_blank"
+    :style="{
+      'position': 'fixed',
+      'display': 'block',
+      'font': 'bold 20px &quot;Poppins&quot;, Arial, sans-serif',
+      'background': 'rgba(255, 255, 255, 0.8)',
+      'color': '#1e1935',
+      'text-decoration': 'none',
+      'padding': '5px',
+      'text-align': 'center',
+      'width': '300px',
+      'z-index': 1200,
+      'border-top': '5px solid rgb(237, 28, 36)',
+      'border-bottom': '5px solid rgb(237, 28, 36)',
+      'box-shadow': '0 3px 10px rgba(0,0,0,.25)',
+      'left': '-99px',
+      'bottom': '30px',
+      'transform': 'rotate(45deg)',
+    }"
+    href="https://www.inventati.org/campaign/"
+  >
+    -AI / +A/I
+  </a>
 </template>
 
 <script setup lang="ts">
