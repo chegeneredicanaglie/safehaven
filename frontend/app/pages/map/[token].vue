@@ -4,6 +4,7 @@
       :token="token"
       :show-map-button="false"
       :show-search-button="true"
+      :show-family-switcher="state.families.length > 1"
       @filters-changed="refreshMap"
       @location-chosen="goToGpsLocation"
       @entity-chosen="goToEntity"
