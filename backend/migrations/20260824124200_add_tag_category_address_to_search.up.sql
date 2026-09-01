@@ -216,6 +216,33 @@ CREATE OR REPLACE AGGREGATE tsquery_and_agg(tsquery) (
     STYPE = tsquery
 );
 
+CREATE OR REPLACE FUNCTION dict_to_tsquery(search_query TEXT) RETURNS tsquery AS $$
+DECLARE result tsquery;
+BEGIN
+    WITH search_terms AS (
+        SELECT *
+        FROM string_to_table(search_query, ' ')
+        AS term
+    ),
+    search_words AS (
+        SELECT * FROM (
+            SELECT term, to_tsquery(term) AS tsquery FROM search_terms
+
+            UNION
+
+            SELECT term, to_tsquery(word) AS tsquery
+            FROM words, search_terms
+            WHERE term <% word
+        ) GROUP BY term, tsquery
+    ),
+    ts_search_query_or AS (
+        SELECT tsquery_or_agg(tsquery) AS tsquery FROM search_words GROUP BY term
+    )
+    SELECT tsquery_and_agg(tsquery) INTO result FROM ts_search_query_or;
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Update the search_entities function to remove group by full_text_search_ts
 CREATE OR REPLACE FUNCTION search_entities(
     search_query TEXT,
@@ -268,23 +295,6 @@ BEGIN
             -- User filters blacklists
             AND NOT (ec.tags_ids && user_excluded_tags_ids)
     ),
-    search_terms AS (
-        SELECT *
-        FROM string_to_table(search_query, ' ')
-        AS term
-    ),
-    search_words AS (
-        SELECT term, to_tsquery(word) AS tsquery
-        FROM words, search_terms
-        WHERE term <% word
-        GROUP BY term, tsquery
-    ),
-    ts_search_query_tmp AS (
-        SELECT tsquery_or_agg(tsquery) AS tsquery FROM search_words GROUP BY term
-    ),
-    ts_search_query AS (
-        SELECT tsquery_and_agg(tsquery) AS tsquery FROM ts_search_query_tmp
-    ),
     filtered_entities AS (
         SELECT
             ie.*,
@@ -295,15 +305,15 @@ BEGIN
             END AS exact_match_score,
             CASE
                 WHEN search_query IS NOT NULL AND search_query <> '' THEN
-                    ts_rank(full_text_search_ts, tsquery)
+                    ts_rank(full_text_search_ts, dict_to_tsquery(search_query))
                 ELSE 0
             END AS rank
-        FROM included_entities ie, ts_search_query
+        FROM included_entities ie
         WHERE
             (
                 search_query IS NULL OR search_query = '' OR (
                     ie.display_name ILIKE '%' || lower(search_query) || '%'
-                        OR (full_text_search_ts @@ tsquery)
+                        OR (full_text_search_ts @@ dict_to_tsquery(search_query))
                     )
             )
             AND (
