@@ -2,7 +2,7 @@
   <div class="h-full flex flex-col">
     <ViewerNavbar
       :token="token"
-      :show-category-switcher="false"
+      :show-category-switcher="true"
       :show-search="false"
       :show-family-switcher="false"
       :show-map-button="state.permissions?.can_access_entity"
@@ -52,20 +52,6 @@
                   </template>
                 </Button>
 
-                <Button
-                  type="button"
-                  severity="warn"
-                  :label="$t('page.search.token.filters')"
-                  @click="showCriteriasModal()"
-                >
-                  <template #icon>
-                    <AppIcon
-                      class="mr-1"
-                      icon-name="filter"
-                    />
-                  </template>
-                </Button>
-
                 <Button type="submit">
                   <template #icon>
                     <AppIcon icon-name="search" />
@@ -101,20 +87,6 @@
                       dynamic
                       class="mr-1"
                       size="20px"
-                    />
-                  </template>
-                </Button>
-
-                <Button
-                  type="button"
-                  severity="warn"
-                  :label="$t('page.search.token.filters')"
-                  @click="showCriteriasModal()"
-                >
-                  <template #icon>
-                    <AppIcon
-                      class="mr-1"
-                      icon-name="filter"
                     />
                   </template>
                 </Button>
@@ -414,10 +386,6 @@ async function displayEntityId(entityId: string) {
 
 async function showFamilySwitcher(event: Event) {
   familySwitcher.value!.toggle(event)
-}
-
-async function showCriteriasModal() {
-  showCriterias.value = true
 }
 </script>
 
