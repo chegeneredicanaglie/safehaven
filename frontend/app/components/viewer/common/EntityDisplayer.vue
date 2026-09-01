@@ -2,14 +2,14 @@
   <div>
     <Tabs v-model:value="tabValue">
       <TabList class="overflow-x-scroll">
+        <Tab value="0">
+          {{ $t('cmp.viewer.common.entityDisplayer.information') }}
+        </Tab>
         <Tab
           v-if="hasChildren"
-          value="0"
+          value="1"
         >
           {{ $t('cmp.viewer.common.entityDisplayer.attached') }}
-        </Tab>
-        <Tab value="1">
-          {{ $t('cmp.viewer.common.entityDisplayer.information') }}
         </Tab>
         <Tab
           v-if="hasParent"
@@ -27,41 +27,7 @@
 
       <TabPanels>
         <TabPanel
-          v-if="hasChildren"
           value="0"
-        >
-          <Card
-            v-for="child in props.entity?.children"
-            :key="child.id"
-            class="mb-1"
-          >
-            <template #title>
-              {{ child.display_name }}
-            </template>
-
-            <template #content>
-              <p class="m-0">
-                <CategoryTag :category="getCategory(child.category_id)" />
-              </p>
-            </template>
-
-            <template #footer>
-              <div
-                class="flex justify-end items-end"
-              >
-                <Button
-                  severity="secondary"
-                  @click="newEntitySelected(child.id)"
-                >
-                  {{ $t('cmp.viewer.common.entityDisplayer.view') }}
-                </Button>
-              </div>
-            </template>
-          </Card>
-        </TabPanel>
-
-        <TabPanel
-          value="1"
         >
           <div
             v-if="(props.entity?.tags.length ?? 0) > 0"
@@ -112,6 +78,40 @@
               .filter(field => field.categories == null || field.categories.includes(props.entity.category.id))"
             :data="props.entity?.entity.data"
           />
+        </TabPanel>
+
+        <TabPanel
+          v-if="hasChildren"
+          value="1"
+        >
+          <Card
+            v-for="child in props.entity?.children"
+            :key="child.id"
+            class="mb-1"
+          >
+            <template #title>
+              {{ child.display_name }}
+            </template>
+
+            <template #content>
+              <p class="m-0">
+                <CategoryTag :category="getCategory(child.category_id)" />
+              </p>
+            </template>
+
+            <template #footer>
+              <div
+                class="flex justify-end items-end"
+              >
+                <Button
+                  severity="secondary"
+                  @click="newEntitySelected(child.id)"
+                >
+                  {{ $t('cmp.viewer.common.entityDisplayer.view') }}
+                </Button>
+              </div>
+            </template>
+          </Card>
         </TabPanel>
 
         <TabPanel
@@ -220,14 +220,14 @@ function newEntitySelected(id: string) {
   emits('entitySelected', id)
 }
 
-const tabValue = ref(hasChildren.value ? '0' : '1')
+const tabValue = ref('0')
 
 watch(
   () => props.entity,
   (newEntity, oldValue) => {
     refreshDiscreteScoreAverages()
     if (newEntity.entity.id !== oldValue.entity.id) {
-      tabValue.value = hasChildren.value ? '0' : '1'
+      tabValue.value = '0'
     }
   },
 )
