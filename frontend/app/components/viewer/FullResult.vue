@@ -11,7 +11,7 @@
             v-if="props.entity.locations.length > 0"
             :coordinates="locations"
             :fill-color="state.getCategory(props.entity.category_id).fill_color"
-            :border-color="state.getCategory(props.entity.category_id).fill_color"
+            :border-color="state.getCategory(props.entity.category_id).border_color"
             :icon-hash="state.getCategory(props.entity.category_id).icon_hash"
             :zoom="13"
             :locked="true"

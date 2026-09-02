@@ -43,7 +43,11 @@
         field="title"
         :header="$t('page.admin.familyId.categories.index.column_title')"
         sortable
-      />
+      >
+        <template #body="slotProps">
+          <CategoryTag :category="slotProps.data" />
+        </template>
+      </Column>
       <Column
         v-if="state.tablesSelectedColumns[table_key]!.includes('default_status')"
         field="default_status"

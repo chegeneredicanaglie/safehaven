@@ -35,6 +35,30 @@
       :object-id="categoryId"
       object-type="categories"
     />
+
+    <div
+      class="h-40 w-full md:h-28 md:w-40 flex flex-col"
+    >
+      <SingleEntityMap
+        :coordinates="[[1390597.954842, 5144695.109498]]"
+        :fill-color="editedCategory.fill_color"
+        :border-color="editedCategory.border_color"
+        :icon-hash="fetchedCategory?.icon_hash"
+        :zoom="13"
+        :locked="true"
+      />
+    </div>
+    <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
+      <div class="flex flex-col justify-between items-start gap-2">
+        <div>
+          <CategoryTag
+            :category="{ ...editedCategory, id: categoryId, version: 1 }"
+            :size="2"
+          />
+        </div>
+      </div>
+    </div>
+
     <span class="flex gap-1 justify-end">
       <NuxtLink :to="`/admin/${familyId}/categories`">
         <Button
