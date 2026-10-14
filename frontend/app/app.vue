@@ -46,9 +46,9 @@
       'border-top': '5px solid rgb(237, 28, 36)',
       'border-bottom': '5px solid rgb(237, 28, 36)',
       'box-shadow': '0 3px 10px rgba(0,0,0,.25)',
-      'left': '-99px',
+      'right': '-99px',
       'bottom': '30px',
-      'transform': 'rotate(45deg)',
+      'transform': 'rotate(-45deg)',
     }"
     href="https://www.inventati.org/campaign/"
   >
