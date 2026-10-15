@@ -42,7 +42,7 @@
       'padding': '5px',
       'text-align': 'center',
       'width': '300px',
-      'z-index': 1200,
+      'z-index': 100,
       'border-top': '5px solid rgb(237, 28, 36)',
       'border-bottom': '5px solid rgb(237, 28, 36)',
       'box-shadow': '0 3px 10px rgba(0,0,0,.25)',
